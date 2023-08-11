@@ -44,11 +44,7 @@ def parse_protobuf_requirements() -> List[Tuple[str, str]]:
                 system_reqs,
             )
             if python_version is not None:
-                version_check = (
-                    f"parse_version({system_python_version!r}) "
-                    f"{python_version.group(1)} "
-                    f"parse_version({python_version.group(2)!r})"
-                )
+                version_check = f"parse_version({system_python_version!r}) {python_version[1]} parse_version({python_version[2]!r})"
                 if not eval(version_check):
                     continue
             # regex to find quoted platform in system_reqs
@@ -59,7 +55,7 @@ def parse_protobuf_requirements() -> List[Tuple[str, str]]:
 
             if platform_reqs is not None:
                 if not eval(
-                    f"{system_platform!r} {platform_reqs.group(1)} {platform_reqs.group(2)!r}"
+                    f"{system_platform!r} {platform_reqs[1]} {platform_reqs[2]!r}"
                 ):
                     continue
 
@@ -70,7 +66,7 @@ def parse_protobuf_requirements() -> List[Tuple[str, str]]:
             )
             if platform_machine is not None:
                 if not eval(
-                    f"{system_machine!r} {platform_machine.group(1)} {platform_machine.group(2)!r}"
+                    f"{system_machine!r} {platform_machine[1]} {platform_machine[2]!r}"
                 ):
                     continue
 
@@ -94,14 +90,14 @@ def parse_protobuf_requirements() -> List[Tuple[str, str]]:
 def get_matching_versions(
     available_protobuf_vs: List[str], protobuf_reqs: List[Tuple[str, str]]
 ) -> List[str]:
-    matching_vs = []
-    for v in available_protobuf_vs:
+    matching_vs = [
+        v
+        for v in available_protobuf_vs
         if all(
             eval(f"parse_version({v!r}) {rq[0]} parse_version({rq[1]!r})")
             for rq in protobuf_reqs
-        ):
-            matching_vs.append(v)
-
+        )
+    ]
     return sorted(list(set(matching_vs)))
 
 

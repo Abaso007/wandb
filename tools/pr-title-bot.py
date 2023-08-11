@@ -169,9 +169,7 @@ def generate_pr_title(
         model=model,
         messages=messages,
     )
-    suggested_title = completion.choices[0]["message"]["content"]
-
-    return suggested_title
+    return completion.choices[0]["message"]["content"]
 
 
 if __name__ == "__main__":

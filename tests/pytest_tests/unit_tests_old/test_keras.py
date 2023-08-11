@@ -11,10 +11,7 @@ def dummy_model(request):
     K.clear_session()
     multi = request.node.get_closest_marker("multiclass")
     image_output = request.node.get_closest_marker("image_output")
-    if multi:
-        loss = "categorical_crossentropy"
-    else:
-        loss = "binary_crossentropy"
+    loss = "categorical_crossentropy" if multi else "binary_crossentropy"
     nodes = 1 if not multi else 10
     if image_output:
         nodes = 300

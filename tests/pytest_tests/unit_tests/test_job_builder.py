@@ -68,9 +68,7 @@ def test_build_repo_notebook_job(runner, tmp_path, mocker):
     orig_os_path_exists = os.path.exists
 
     def exists(path):
-        if "test.ipynb" in path:
-            return True
-        return orig_os_path_exists(path)
+        return True if "test.ipynb" in path else orig_os_path_exists(path)
 
     mocker.patch("os.path.exists", side_effect=exists)
     with runner.isolated_filesystem():
@@ -142,9 +140,7 @@ def test_build_artifact_notebook_job(runner, tmp_path, mocker):
     orig_os_path_exists = os.path.exists
 
     def exists(path):
-        if "test.ipynb" in path:
-            return True
-        return orig_os_path_exists(path)
+        return True if "test.ipynb" in path else orig_os_path_exists(path)
 
     mocker.patch("os.path.exists", side_effect=exists)
     with runner.isolated_filesystem():

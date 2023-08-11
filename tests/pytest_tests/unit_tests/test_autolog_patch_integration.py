@@ -34,14 +34,12 @@ def mock_resolver(args, kwargs, response, start_time, time_elapsed):
 
 @pytest.fixture
 def patch_api():
-    api = PatchAPITest(
+    return PatchAPITest(
         name="MockAPI",
         symbols=["generate", "Chat.complete"],
         resolver=mock_resolver,
         test_api=MockAPI(),
     )
-
-    return api
 
 
 @pytest.fixture

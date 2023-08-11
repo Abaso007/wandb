@@ -151,7 +151,7 @@ class RequestsMock:
         key = parts[0].split("/")[-1]
         if len(parts) > 1:
             # To make assertions easier, we remove the run from storage requests
-            key = key + "?" + parts[1].split("&run=")[0]
+            key = f"{key}?" + parts[1].split("&run=")[0]
         with self._lock:
             # Azure tests use "storage" as the final path of their requests
             if key == "storage":
@@ -161,8 +161,7 @@ class RequestsMock:
 
     def _inject(self, method, url, kwargs):
         pre_request = dict(method=method, url=url, kwargs=kwargs)
-        inject = InjectRequestsParse(self.ctx).find(pre_request=pre_request)
-        if inject:
+        if inject := InjectRequestsParse(self.ctx).find(pre_request=pre_request):
             if inject.requests_error:
                 if inject.requests_error is True:
                     raise requests.exceptions.RetryError()
@@ -191,7 +190,7 @@ class RequestsMock:
         elif method.lower() == "put":
             return self.put(url, **kwargs)
         else:
-            message = "Request method not implemented: %s" % method
+            message = f"Request method not implemented: {method}"
             raise requests.RequestException(message)
 
     def __repr__(self):
@@ -295,8 +294,7 @@ class InjectRequests:
     def add(self, match, response=None, http_status=None, requests_error=None):
         ctx_inject = self._ctx.setdefault("inject", {})
         ctx_rules = ctx_inject.setdefault("rules", [])
-        rule = {}
-        rule["match"] = match._as_dict()
+        rule = {"match": match._as_dict()}
         if response:
             rule["response"] = response
         if http_status:

@@ -12,11 +12,11 @@ def pytest_addoption(parser):
 
 def pytest_generate_tests(metafunc):
     """Fixture to make api_key and base_url available in tests."""
-    api_key = metafunc.config.option.api_key
     if "api_key" in metafunc.fixturenames:
+        api_key = metafunc.config.option.api_key
         metafunc.parametrize("api_key", [api_key])
-    base_url = metafunc.config.option.base_url
     if "base_url" in metafunc.fixturenames:
+        base_url = metafunc.config.option.base_url
         metafunc.parametrize("base_url", [base_url])
 
 

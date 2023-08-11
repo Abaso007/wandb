@@ -256,8 +256,7 @@ class Sentry:
                 except Exception:
                     pass
 
-            email = tags.get("email")
-            if email:
+            if email := tags.get("email"):
                 scope.user = {"email": email}  # noqa
 
         # todo: add back the option to pass general tags see: c645f625d1c1a3db4a6b0e2aa8e924fee101904c (wandb/util.py)

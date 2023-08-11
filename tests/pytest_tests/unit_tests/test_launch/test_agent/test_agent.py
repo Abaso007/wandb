@@ -245,7 +245,7 @@ def test_thread_finish_no_fail(mocker):
     job.project = MagicMock()
     agent._jobs = {"thread_1": job}
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert not mocker.api.fail_run_queue_item.called
     assert not mock_saver.save_contents.called
 
@@ -265,7 +265,7 @@ def test_thread_finish_sweep_fail(mocker):
     job.project = MagicMock()
     agent._jobs = {"thread_1": job}
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert mocker.api.fail_run_queue_item.called_once
     assert mock_saver.save_contents.called_once
 
@@ -285,7 +285,7 @@ def test_thread_finish_run_fail(mocker):
     job.project = MagicMock()
     agent._jobs = {"thread_1": job}
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert mocker.api.fail_run_queue_item.called_once
     assert mock_saver.save_contents.called_once
 
@@ -304,7 +304,7 @@ def test_thread_finish_run_fail_start(mocker):
     agent._jobs = {"thread_1": job}
     agent._jobs_lock = MagicMock()
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert mocker.api.fail_run_queue_item.called_once
     assert mock_saver.save_contents.called_once
 
@@ -324,7 +324,7 @@ def test_thread_finish_run_fail_start_old_server(mocker):
     agent._jobs_lock = MagicMock()
     agent._jobs = {"thread_1": job}
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert not mocker.api.fail_run_queue_item.called
     assert not mock_saver.save_contents.called
 
@@ -345,7 +345,7 @@ def test_thread_finish_run_fail_different_entity(mocker):
     agent._jobs = {"thread_1": job}
     agent._jobs_lock = MagicMock()
     agent.finish_thread_id("thread_1")
-    assert len(agent._jobs) == 0
+    assert not agent._jobs
     assert not mocker.api.fail_run_queue_item.called
     assert not mock_saver.save_contents.called
 

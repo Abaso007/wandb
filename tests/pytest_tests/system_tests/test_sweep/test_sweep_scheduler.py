@@ -129,9 +129,7 @@ def test_sweep_scheduler_runcap(user, monkeypatch):
     )
 
     def mock_get_run_state(*args, **kwargs):
-        if args[2] == "sweep-scheduler":
-            return "running"
-        return "finished"
+        return "running" if args[2] == "sweep-scheduler" else "finished"
 
     # Entity, project, and sweep should be everything you need to create a scheduler
     api = internal.Api()
@@ -231,9 +229,7 @@ def test_sweep_scheduler_base_scheduler_states(
             self.state = SchedulerState.COMPLETED
 
         def mock_get_run_state(*args, **kwargs):
-            if args[2] == "sweep-scheduler":
-                return "running"
-            return "finished"
+            return "running" if args[2] == "sweep-scheduler" else "finished"
 
         api.get_run_state = mock_get_run_state
 
@@ -289,9 +285,7 @@ def test_sweep_scheduler_base_scheduler_states(
         )
 
         def mock_get_run_state(*args, **kwargs):
-            if args[0] == "sweep-scheduler":
-                return "running"
-            return "finished"
+            return "running" if args[0] == "sweep-scheduler" else "finished"
 
         sweep_id = wandb.sweep(sweep_config, entity=_entity, project=_project)
         _scheduler = Scheduler(api, sweep_id=sweep_id, entity=_entity, project=_project)
@@ -399,9 +393,7 @@ def test_sweep_scheduler_base_add_to_launch_queue(user, sweep_config, monkeypatc
     )
 
     def mock_get_run_state(*args, **kwargs):
-        if args[2] == "sweep-scheduler":
-            return "running"
-        return "finished"
+        return "running" if args[2] == "sweep-scheduler" else "finished"
 
     api.get_run_state = mock_get_run_state
 
@@ -497,9 +489,7 @@ def test_sweep_scheduler_sweeps_stop_agent_hearbeat(
     api.agent_heartbeat = mock_agent_heartbeat
 
     def mock_get_run_state(*args, **kwargs):
-        if args[2] == "sweep-scheduler":
-            return "running"
-        return "finished"
+        return "running" if args[2] == "sweep-scheduler" else "finished"
 
     api.get_run_state = mock_get_run_state
 
@@ -545,9 +535,7 @@ def test_sweep_scheduler_sweeps_invalid_agent_heartbeat(
     api.agent_heartbeat = mock_agent_heartbeat
 
     def mock_get_run_state(*args, **kwargs):
-        if args[2] == "sweep-scheduler":
-            return "running"
-        return "finished"
+        return "running" if args[2] == "sweep-scheduler" else "finished"
 
     api.get_run_state = mock_get_run_state
 
@@ -631,9 +619,7 @@ def test_sweep_scheduler_sweeps_run_and_heartbeat(
     )
 
     def mock_get_run_state(*args, **kwargs):
-        if args[2] == "sweep-scheduler":
-            return "running"
-        return "finished"
+        return "running" if args[2] == "sweep-scheduler" else "finished"
 
     api.get_run_state = mock_get_run_state
 
