@@ -177,7 +177,7 @@ class Report(Base):
         id = self.id.replace("=", "")
         app_url = self._api.client.app_url
         if not app_url.endswith("/"):
-            app_url = app_url + "/"
+            app_url = f"{app_url}/"
         return f"{app_url}{self.entity}/{self.project}/reports/{title}--{id}"
 
     def save(self, draft: bool = False, clone: bool = False) -> "Report":
@@ -186,12 +186,7 @@ class Report(Base):
 
         # create project if not exists
         projects = self._api.projects(self.entity)
-        is_new_project = True
-        for p in projects:
-            if p.name == self.project:
-                is_new_project = False
-                break
-
+        is_new_project = all(p.name != self.project for p in projects)
         if is_new_project:
             self._api.create_project(self.project, self.entity)
 
@@ -224,21 +219,20 @@ class Report(Base):
         viewspec["spec"] = json.loads(viewspec["spec"])
         if clone:
             return Report.from_json(viewspec)
-        else:
-            self._viewspec["id"] = viewspec["id"]
-            self._viewspec["name"] = viewspec["name"]
-            return self
+        self._viewspec["id"] = viewspec["id"]
+        self._viewspec["name"] = viewspec["name"]
+        return self
 
     def to_html(self, height: int = 1024, hidden: bool = False) -> str:
         """Generate HTML containing an iframe displaying this report."""
         try:
-            url = self.url + "?jupyter=true"
+            url = f"{self.url}?jupyter=true"
             style = f"border:none;width:100%;height:{height}px;"
             prefix = ""
             if hidden:
                 style += "display:none;"
                 prefix = ipython.toggle_button("report")
-            return prefix + f"<iframe src={url!r} style={style!r}></iframe>"
+            return f"{prefix}<iframe src={url!r} style={style!r}></iframe>"
         except AttributeError:
             termlog("HTML repr will be available after you save the report!")
 

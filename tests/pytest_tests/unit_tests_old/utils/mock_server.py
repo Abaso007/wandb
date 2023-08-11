@@ -1,5 +1,6 @@
 """Mock Server for simple calls the cli and public api make"""
 
+
 import base64
 import functools
 import gzip
@@ -24,7 +25,7 @@ from werkzeug.exceptions import BadRequest
 save_path = sys.path[:2]
 import wandb
 
-sys.path[0:0] = save_path
+sys.path[:0] = save_path
 
 RequestsMock = None
 InjectRequestsParse = None
@@ -157,7 +158,7 @@ def run(ctx):
             "name": "nofile.h5",
             "sizeBytes": 0,
             "md5": "0",
-            "url": base_url + "/storage?file=nofile.h5",
+            "url": f"{base_url}/storage?file=nofile.h5",
         }
     else:
         fileNode = {
@@ -165,9 +166,8 @@ def run(ctx):
             "name": ctx["requested_file"],
             "sizeBytes": 20,
             "md5": "XXX",
-            "url": base_url + "/storage?file=%s" % ctx["requested_file"],
-            "directUrl": base_url
-            + "/storage?file=%s&direct=true" % ctx["requested_file"],
+            "url": f'{base_url}/storage?file={ctx["requested_file"]}',
+            "directUrl": f'{base_url}/storage?file={ctx["requested_file"]}&direct=true',
         }
     if ctx["run_script_type"] == "notebook":
         program_name = "one_cell.ipynb"
@@ -314,12 +314,10 @@ def artifact2(
 
 
 def paginated(node, ctx, extra={}):
-    next_page = False
     ctx["page_count"] += 1
-    if ctx["page_count"] < ctx["page_times"]:
-        next_page = True
+    next_page = ctx["page_count"] < ctx["page_times"]
     edge = {"node": node, "cursor": "abc123"}
-    edge.update(extra)
+    edge |= extra
     return {
         "edges": [edge],
         "pageInfo": {"endCursor": "abc123", "hasNextPage": next_page},
@@ -354,10 +352,7 @@ class CTX:
     @classmethod
     def load(cls, default):
         with cls.lock:
-            if cls.STATE is not None:
-                return CTX(cls.STATE)
-            else:
-                return CTX(default)
+            return CTX(cls.STATE) if cls.STATE is not None else CTX(default)
 
 
 def get_ctx():
@@ -368,8 +363,7 @@ def get_ctx():
 
 def get_run_ctx(run_id):
     glob_ctx = get_ctx()
-    run_ctx = glob_ctx["runs"][run_id]
-    return run_ctx
+    return glob_ctx["runs"][run_id]
 
 
 def set_ctx(ctx):
@@ -378,9 +372,10 @@ def set_ctx(ctx):
 
 
 def _bucket_config(ctx):
-    files = ["wandb-metadata.json", "diff.patch"]
     if "bucket_config" in ctx and "files" in ctx["bucket_config"]:
         files = ctx["bucket_config"]["files"]
+    else:
+        files = ["wandb-metadata.json", "diff.patch"]
     base_url = request.url_root.rstrip("/")
     return {
         "commit": "HEAD",
@@ -390,11 +385,8 @@ def _bucket_config(ctx):
             "edges": [
                 {
                     "node": {
-                        "url": base_url + "/storage?file=" + name,
-                        "directUrl": base_url
-                        + "/storage?file="
-                        + name
-                        + "&direct=true",
+                        "url": f"{base_url}/storage?file={name}",
+                        "directUrl": f"{base_url}/storage?file={name}&direct=true",
                         "updatedAt": datetime.now().isoformat(),
                         "name": name,
                     }

@@ -152,7 +152,7 @@ def test_launch_sweep_launch_uri(user, image_uri, launch_config):
     )
 
     if res.get("success") is not True:
-        raise Exception("create queue" + str(res))
+        raise Exception(f"create queue{str(res)}")
 
     sweep_config = {
         "method": "grid",

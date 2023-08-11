@@ -51,7 +51,7 @@ def test_create_job_artifact(runner, user, wandb_init, test_settings):
     public_api = PublicApi()
 
     # create code artifact dir
-    source_dir = "./" + tempfile.TemporaryDirectory().name
+    source_dir = f"./{tempfile.TemporaryDirectory().name}"
     os.makedirs(source_dir)
 
     with open(f"{source_dir}/test.py", "w") as f:

@@ -94,10 +94,10 @@ def batch_metrics(metrics, bs: int) -> Iterable[List[Metric]]:
     for i, batch in enumerate(batched(bs, metrics)):
         batched_metrics = []
         for step, metric in enumerate(batch, start=i * bs):
-            for k, v in metric.items():
-                batched_metrics.append(
-                    Metric(k, v, step=step, timestamp=SECONDS_FROM_2023_01_01)
-                )
+            batched_metrics.extend(
+                Metric(k, v, step=step, timestamp=SECONDS_FROM_2023_01_01)
+                for k, v in metric.items()
+            )
         yield batched_metrics
 
 
@@ -303,13 +303,11 @@ def mlflow_server(mlflow_server_settings):
         ]
 
     process = subprocess.Popen(start_cmd)  # process
-    healthy = _check_mlflow_server_health(
+    if healthy := _check_mlflow_server_health(
         mlflow_server_settings.base_url,
         mlflow_server_settings.health_endpoint,
         num_retries=30,
-    )
-
-    if healthy:
+    ):
         yield mlflow_server_settings
     else:
         raise Exception("MLflow server is not healthy")
@@ -327,12 +325,12 @@ def prelogged_mlflow_server(mlflow_server, mlflow_logging_config):
 
         # Experiments
         for _ in range(config.n_experiments):
-            exp_name = "Experiment " + str(uuid.uuid4())
+            exp_name = f"Experiment {str(uuid.uuid4())}"
             mlflow.set_experiment(exp_name)
 
             # Runs
             for _ in range(config.n_runs_per_experiment):
-                run_name = "Run :/" + str(uuid.uuid4())
+                run_name = f"Run :/{str(uuid.uuid4())}"
                 client = MlflowClient()
                 with mlflow.start_run() as run:
                     mlflow.set_tag("mlflow.runName", run_name)

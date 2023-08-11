@@ -81,16 +81,15 @@ def cli_unsupported(argument):
 
 class ClickWandbException(ClickException):
     def format_message(self):
+        if issubclass(self.orig_type, Error):
+            return click.style(str(self.message), fg="red")
         # log_file = util.get_log_file_path()
         log_file = ""
         orig_type = f"{self.orig_type.__module__}.{self.orig_type.__name__}"
-        if issubclass(self.orig_type, Error):
-            return click.style(str(self.message), fg="red")
-        else:
-            return (
-                f"An Exception was raised, see {log_file} for full traceback.\n"
-                f"{orig_type}: {self.message}"
-            )
+        return (
+            f"An Exception was raised, see {log_file} for full traceback.\n"
+            f"{orig_type}: {self.message}"
+        )
 
 
 def display_error(func):
@@ -141,8 +140,7 @@ def prompt_for_project(ctx, entity):
         else:
             project_names = [project["name"] for project in result] + ["Create New"]
             wandb.termlog("Which project should we use?")
-            result = util.prompt_choices(project_names)
-            if result:
+            if result := util.prompt_choices(project_names):
                 project = result
             else:
                 project = "Create New"
@@ -165,9 +163,7 @@ class RunGroup(click.Group):
     def get_command(self, ctx, cmd_name):
         # TODO: check if cmd_name is a file in the current dir and not require `run`?
         rv = click.Group.get_command(self, ctx, cmd_name)
-        if rv is not None:
-            return rv
-        return None
+        return rv if rv is not None else None
 
 
 @click.command(cls=RunGroup, invoke_without_command=True)
@@ -192,9 +188,9 @@ def projects(entity, display=True):
     api = _get_cling_api()
     projects = api.list_projects(entity=entity)
     if len(projects) == 0:
-        message = "No projects found for %s" % entity
+        message = f"No projects found for {entity}"
     else:
-        message = 'Latest projects for "%s"' % entity
+        message = f'Latest projects for "{entity}"'
     if display:
         click.echo(click.style(message, bold=True))
         for project in projects:
@@ -292,9 +288,6 @@ def service(
 )
 @click.option("--project", "-p", help="The project to use.")
 @click.option("--entity", "-e", help="The entity to scope the project to.")
-# TODO(jhr): Enable these with settings rework
-# @click.option("--setting", "-s", help="enable an arbitrary setting.", multiple=True)
-# @click.option('--show', is_flag=True, help="Show settings")
 @click.option("--reset", is_flag=True, help="Reset settings")
 @click.option(
     "--mode",
@@ -380,9 +373,7 @@ def init(ctx, project, entity, reset, mode):
         wandb.termlog(
             "Which team should we use?",
         )
-        result = util.prompt_choices(team_names)
-        # result can be empty on click
-        if result:
+        if result := util.prompt_choices(team_names):
             entity = result
         else:
             entity = "Manual Entry"
@@ -408,18 +399,25 @@ def init(ctx, project, entity, reset, mode):
         file.write("*\n!settings")
 
     click.echo(
-        click.style("This directory is configured!  Next, track a run:\n", fg="green")
-        + textwrap.dedent(
-            """\
+        (
+            click.style(
+                "This directory is configured!  Next, track a run:\n",
+                fg="green",
+            )
+            + textwrap.dedent(
+                """\
         * In your training script:
             {code1}
             {code2}
         * then `{run}`.
         """
-        ).format(
-            code1=click.style("import wandb", bold=True),
-            code2=click.style('wandb.init(project="%s")' % project, bold=True),
-            run=click.style("python <train.py>", bold=True),
+            ).format(
+                code1=click.style("import wandb", bold=True),
+                code2=click.style(
+                    f'wandb.init(project="{project}")', bold=True
+                ),
+                run=click.style("python <train.py>", bold=True),
+            )
         )
     )
 
@@ -740,7 +738,7 @@ def sweep(
             "resume": "Resuming",
         }
         wandb.termlog(f"{ings[state]} sweep {entity}/{project}/{sweep_id}")
-        getattr(api, "%s_sweep" % state)(sweep_id, entity=entity, project=project)
+        getattr(api, f"{state}_sweep")(sweep_id, entity=entity, project=project)
         wandb.termlog("Done.")
         return
     else:
@@ -1021,8 +1019,8 @@ def launch_sweep(
 
         prev_scheduler_args, prev_settings = sweep_utils.get_previous_args(run_spec)
         # Passed in scheduler_args and settings override previous
-        scheduler_args.update(prev_scheduler_args)
-        settings.update(prev_settings)
+        scheduler_args |= prev_scheduler_args
+        settings |= prev_settings
     if not queue:
         wandb.termerror(
             "Launch-sweeps require setting a 'queue', use --queue option or a 'queue' key in the 'launch' section in the config"
@@ -1122,8 +1120,7 @@ def launch_sweep(
     # Log nicely formatted sweep information
     styled_id = click.style(sweep_id, fg="yellow")
     wandb.termlog(f"{'Resumed' if resume_id else 'Created'} sweep with ID: {styled_id}")
-    sweep_url = wandb_sdk.wandb_sweep._get_sweep_url(api, sweep_id)
-    if sweep_url:
+    if sweep_url := wandb_sdk.wandb_sweep._get_sweep_url(api, sweep_id):
         styled_url = click.style(sweep_url, underline=True, fg="blue")
         wandb.termlog(f"View sweep at: {styled_url}")
     wandb.termlog(f"Scheduler added to launch queue ({queue})")

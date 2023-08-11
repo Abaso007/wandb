@@ -63,17 +63,15 @@ def test_sync_in_progress(live_mock_server, test_dir):
         assert False, "train.py failed to launch :("
     else:
         print(
-            "Starting live syncing after {} seconds from: {}".format(
-                attempts * 0.1, latest_run
-            )
+            f"Starting live syncing after {attempts * 0.1} seconds from: {latest_run}"
         )
-    for i in range(3):
+    for _ in range(3):
         # Generally, the first sync will fail because the .wandb file is empty
         sync = subprocess.Popen(["wandb", "sync", latest_run], env=os.environ)
         assert sync.wait() == 0
         # Only confirm we don't have a .synced file if our offline run is still running
         if offline_run.poll() is None:
-            assert len(glob.glob(os.path.join(latest_run, "*.synced"))) == 0
+            assert not glob.glob(os.path.join(latest_run, "*.synced"))
     assert offline_run.wait() == 0
     sync = subprocess.Popen(["wandb", "sync", latest_run], env=os.environ)
     assert sync.wait() == 0

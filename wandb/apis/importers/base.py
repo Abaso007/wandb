@@ -216,7 +216,7 @@ class RecordMaker:
         return self.interface._make_record(summary=summary)
 
     def _make_history_records(self) -> Iterable[pb.Record]:
-        for _, metrics in enumerate(self.run.metrics()):
+        for metrics in self.run.metrics():
             history = pb.HistoryRecord()
             for k, v in metrics.items():
                 item = history.item.add()
@@ -263,12 +263,10 @@ class RecordMaker:
         feature.importer_mlflow = True
         telem.feature.CopyFrom(feature)
 
-        cli_version = self.run.cli_version()
-        if cli_version:
+        if cli_version := self.run.cli_version():
             telem.cli_version = cli_version
 
-        python_version = self.run.python_version()
-        if python_version:
+        if python_version := self.run.python_version():
             telem.python_version = python_version
 
         return self.interface._make_record(telemetry=telem)
@@ -276,8 +274,7 @@ class RecordMaker:
     def _make_metadata_file(self) -> str:
         missing_text = "This data was not captured"
 
-        d = {}
-        d["os"] = coalesce(self.run.os_version(), missing_text)
+        d = {"os": coalesce(self.run.os_version(), missing_text)}
         d["python"] = coalesce(self.run.python_version(), missing_text)
         d["program"] = coalesce(self.run.program(), missing_text)
         d["cuda"] = coalesce(self.run.cuda_version(), missing_text)
